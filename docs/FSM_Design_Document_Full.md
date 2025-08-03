@@ -10,7 +10,7 @@ This document defines the proposed Finite State Machine (FSM) structure for the 
 
 - Define a deterministic and modular FSM for core driving behavior.
 - Support normal operation and failure recovery.
-- Maintain safety via emergency override logic.
+- Maintain safety via manual override logic.
 - Allow easy expansion as system complexity grows.
 
 ---
@@ -26,11 +26,7 @@ This document defines the proposed Finite State Machine (FSM) structure for the 
 | `PLANNING_OVERTAKE` | Obstacle detected — evaluating overtake feasibility. |
 | `EXECUTE_OVERTAKE` | Actively executing an overtaking maneuver using alternate trajectory. |
 | `OBSTACLE_AVOIDANCE` | For basic lateral avoidance (e.g., static debris). Can be merged with `PLANNING_OVERTAKE` if overtake logic is unified. |
-| `EMERGENCY_STOP` | Safety-critical halt due to hardware/software fault or external kill command. |
 | `RECOVERY` | Attempting to recover from fault by reinitializing subsystems or re-localizing. |
-| `RECOVERY_FAILED` | Recovery failed after max attempts. Requires human intervention or reset. |
-| `FINISHED` | Goal reached successfully. Enters passive state before shutdown. |
-| `SHUTDOWN` | Final system shutdown. May include data logging or network disconnect. |
 
 ---
 
@@ -44,64 +40,61 @@ This document defines the proposed Finite State Machine (FSM) structure for the 
 | `TRACKING` | `PLANNING_OVERTAKE` | Obstacle detected (moving or static) |
 | `PLANNING_OVERTAKE` | `EXECUTE_OVERTAKE` | Feasible overtake path computed |
 | `EXECUTE_OVERTAKE` | `TRACKING` | Overtake maneuver complete |
-| `TRACKING` | `FINISHED` | Goal reached or race completed |
-| `FINISHED` | `SHUTDOWN` | Time/event-based trigger |
-| Any | `EMERGENCY_STOP` | Critical fault, safety violation, or `/kill_switch` activated |
-| `EMERGENCY_STOP` | `RECOVERY` | Recovery signal issued |
+| `TRACKING` | `OBSTACLE_AVOIDANCE` | Basic obstacle detected requiring lateral avoidance |
+| `OBSTACLE_AVOIDANCE` | `TRACKING` | Avoidance maneuver complete |
+| `TRACKING` | `IDLE` | Manual stop command (`/stop_flag` or user interrupt) |
+| `TRACKING` | `RECOVERY` | System fault detected |
+| `PLANNING_OVERTAKE` | `RECOVERY` | Planning failure or system fault |
+| `EXECUTE_OVERTAKE` | `RECOVERY` | Execution failure or system fault |
+| `OBSTACLE_AVOIDANCE` | `RECOVERY` | Avoidance failure or system fault |
 | `RECOVERY` | `TRACKING` | Recovered successfully |
-| `RECOVERY` | `RECOVERY_FAILED` | Max retry limit reached |
+| `RECOVERY` | `IDLE` | Recovery unsuccessful - manual intervention required |
 
 ---
 
 ## 🗺️ FSM State Transition
 
                               +--------+
-                             |  IDLE  |
-                             +--------+
-                                  |
-                       /start_flag received
-                                  v
-                            +-----------+
-                            |  STARTUP  |
-                            +-----------+
-                                  |
-                       system checks passed
-                                  v
-                       +-------------------+
-                       |  WAIT_FOR_PATH    |
-                       +-------------------+
-                                  |
-                           path received
-                                  v
-                             +--------+
+                             |  IDLE  |<---------------------------+
+                             +--------+                           |
+                                  |                               |
+                       /start_flag received           manual stop |
+                                  v                    command    |
+                            +-----------+                         |
+                            |  STARTUP  |                         |
+                            +-----------+                         |
+                                  |                               |
+                       system checks passed                       |
+                                  v                               |
+                       +-------------------+                      |
+                       |  WAIT_FOR_PATH    |                      |
+                       +-------------------+                      |
+                                  |                               |
+                           path received                          |
+                                  v                               |
+                             +--------+---------------------------+
                              |TRACKING|
                              +--------+
-                             /        \
-                obstacle detected     \ goal reached
-                           v           v
-                +----------------+  +-----------+
-                |PLANNING_OVERTAKE| | FINISHED  |
-                +----------------+  +-----------+
-                          |               |
-              valid path computed   end trigger
-                          v               v
-                +------------------+   +---------+
-                |EXECUTE_OVERTAKE  |   | SHUTDOWN|
-                +------------------+   +---------+
-                          |
-                maneuver complete
-                          v
-                      +--------+
+                             /   |   \
+              obstacle detected  |    \ basic obstacle
+                           v     |     v
+                +----------------+ +------------------+
+                |PLANNING_OVERTAKE| |OBSTACLE_AVOIDANCE|
+                +----------------+ +------------------+
+                          |                 |
+              valid path computed    avoidance complete
+                          v                 |
+                +------------------+        |
+                |EXECUTE_OVERTAKE  |        |
+                +------------------+        |
+                          |                 |
+                maneuver complete           |
+                          v                 v
+                      +--------+<-----------+
                       |TRACKING|
                       +--------+
                           |
-              emergency or fault detected
-                          v
-                +------------------+
-                | EMERGENCY_STOP   |
-                +------------------+
-                          |
-                  recovery command
+                 fault detected
                           v
                       +--------+
                       |RECOVERY|
@@ -109,9 +102,9 @@ This document defines the proposed Finite State Machine (FSM) structure for the 
                        /      \
              success /        \ failure
                    v           v
-              +--------+   +------------------+
-              |TRACKING|   | RECOVERY_FAILED  |
-              +--------+   +
+              +--------+   +--------+
+              |TRACKING|   |  IDLE  |
+              +--------+   +--------+
 
 ---
 
@@ -121,8 +114,4 @@ This document defines the proposed Finite State Machine (FSM) structure for the 
 ![ROS Navigation Project](https://github.com/ros-navigation)  
 ![Autoware Documentation](https://autowarefoundation.github.io/autoware-documentation/main/)  
 ![Finite-State Machine Wiki](https://en.wikipedia.org/wiki/Finite-state_machine)  
-![Automata Theory Wiki](https://en.wikipedia.org/wiki/Automata_theory)  
-
-
-
-
+![Automata Theory Wiki](https://en.wikipedia.org/wiki/Automata_theory)
