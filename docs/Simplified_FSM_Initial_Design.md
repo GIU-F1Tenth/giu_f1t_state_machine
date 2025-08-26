@@ -71,6 +71,39 @@ This document defines a **simplified and initial** Finite State Machine (FSM) st
 
 ## 📝 Implementation Notes
 
+### ✅ Why the Simplified FSM (Minimization Rationale)
+We intentionally selected this reduced FSM instead of the full design (see `FSM_Design_Document_Full.md`) based on classic **FSM minimization** principles: merge states that are currently indistinguishable with respect to (a) the event alphabet we handle now and (b) externally observable outputs / side‑effects. Any state whose transitions and outward behavior are equivalent (given the present system scope) becomes redundant until new differentiating conditions or outputs are introduced.
+
+#### Event Alphabet (Current Phase)
+`{ start_cmd, init_complete, obstacle_blocking, overtake_done, stop_cmd, emergency_interrupt }`
+
+Under this limited alphabet, several states in the full FSM collapse into equivalence classes:
+
+| Full FSM State(s) | Simplified Representative | Reason for Equivalence (Current Scope) |
+|-------------------|---------------------------|----------------------------------------|
+| `WAIT_FOR_PATH` + `STARTUP` (post checks) | `STARTUP` | Both only gate transition to driving; path assumed available → no distinct branching. |
+| `PLANNING_OVERTAKE` + `EXECUTE_OVERTAKE` | `OVERTAKE` | No external consumer distinguishes planning vs execution; both are “handling dynamic obstacle until resolved”. |
+| `OBSTACLE_AVOIDANCE` | `OVERTAKE` | Same trigger (blocking object) and termination condition (path clear) in current implementation. |
+| `EMERGENCY_STOP` | `IDLE` | Both result in halted vehicle; no separate recovery channel yet. |
+| `RECOVERY`, `RECOVERY_FAILED` | (omitted) | No implemented recovery routines; would be unreachable or degenerate to IDLE. |
+| `FINISHED`, `SHUTDOWN` | `IDLE` | Race completion not yet producing a distinct post-finish behavior set. |
+
+Thus the minimized deterministic automaton over the current event set has four necessary states: `IDLE`, `STARTUP`, `TRACKING`, `OVERTAKE`.
+
+#### Benefits Now
+- Smaller test matrix (4 states, 6 primary transitions) → faster validation.
+- Lower cognitive load for early contributors.
+- Avoids premature branching logic (planning vs executing overtake) before metrics justify it.
+- Clear upgrade path: any future feature that introduces a new distinguishing trigger/output (e.g., explicit recovery attempts, multi-phase overtake planner) re-splits the merged state(s) without breaking the public interface.
+
+#### When to Re-Expand
+- Introduce asynchronous global planner delivering paths → restore `WAIT_FOR_PATH`.
+- Add multi-phase overtake pipeline (cost evaluation → trajectory commit) → split `OVERTAKE` into planning/execution.
+- Implement structured recovery procedures (re-localization, controller reset) → add `RECOVERY` (+ possible failure terminal state).
+- Add race session lifecycle handling → reintroduce `FINISHED` / controlled `SHUTDOWN`.
+
+For now, the simplified FSM is the minimal sufficient controller consistent with observed triggers and required outputs, aligning with FSM minimization theory while preserving extensibility.
+
 ### 🔧 Removed States for Initial Implementation
 The following states from the original comprehensive design have been **temporarily removed** to focus on core functionality:
 - `WAIT_FOR_PATH` - Simplified by assuming path is available during STARTUP
