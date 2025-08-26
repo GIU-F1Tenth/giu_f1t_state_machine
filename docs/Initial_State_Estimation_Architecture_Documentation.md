@@ -170,32 +170,32 @@ Each added source increases configuration and covariance tuning complexity (time
 
 ## References
 
-1. Moore, T., & Stouch, D. (2016). A Generalized Extended Kalman Filter Implementation for the Robot Operating System. In: Proceedings of the 13th International Conference on Intelligent Autonomous Systems (IAS-13). DOI: 10.1007/978-3-319-48036-7_9.  
+1. [Moore, T., & Stouch, D. (2016). A Generalized Extended Kalman Filter Implementation for the Robot Operating System. In: Proceedings of the 13th International Conference on Intelligent Autonomous Systems (IAS-13).](https://link.springer.com/chapter/10.1007/978-3-319-48036-7_9).  
   *Describes the robot_localization package EKF/UKF implementations used in ROS.*
 
-2. ROS Wiki – robot_localization. http://wiki.ros.org/robot_localization  
+2. [ROS Wiki – robot_localization.](http://wiki.ros.org/robot_localization)  
   *Official documentation of `ekf_localization_node` and `ukf_localization_node`.*
 
-3. F1TENTH Autonomous Racing Project. https://f1tenth.org  
+3. [F1TENTH Autonomous Racing Project.](https://f1tenth.org)  
   *Official site describing the F1TENTH platform, its architecture, and racing applications.*
 
 4. Thrun, S., Burgard, W., & Fox, D. (2005). Probabilistic Robotics. MIT Press. ISBN: 978-0262201629.  
   *Standard reference on Bayesian filtering, including EKF and sensor fusion in mobile robots.*
 
-5. Sukkarieh, S., Nebot, E. M., & Durrant-Whyte, H. F. (1999). A high integrity IMU/GPS navigation loop for autonomous land vehicle applications. IEEE Transactions on Robotics and Automation, 15(3), 572–578. DOI: 10.1109/70.768177.  
+5. [Sukkarieh, S., Nebot, E. M., & Durrant-Whyte, H. F. (1999). A high integrity IMU/GPS navigation loop for autonomous land vehicle applications. IEEE Transactions on Robotics and Automation, 15(3), 572–578.](https://ieeexplore.ieee.org/document/768177)  
   *Classical reference for sensor fusion of odometry, IMU, and GPS.*
 
-6. Rokhman, F., & Stouch, D. (2016). The robot_localization Package of ROS. ROSCon 2016. Slides: https://roscon.ros.org/2016/presentations/robot_localization.pdf  
+6. [Rokhman, F., & Stouch, D. (2016). The robot_localization Package of ROS. ROSCon 2016](https://roscon.ros.org/2016/presentations/robot_localization.pdf)  
   *Covers usage and tuning of robot_localization in real systems.*
 
-7. Furgale, P., Barfoot, T. D., & Sibley, G. (2013). Continuous-Time Batch Estimation Using Temporal Basis Functions. International Journal of Robotics Research, 32(5), 566–584. DOI: 10.1177/0278364913490328.  
+7. Furgale, P., Barfoot, T. D., & Sibley, G. (2013). Continuous-Time Batch Estimation Using Temporal Basis Functions. International Journal of Robotics Research, 32(5), 566–584.
   *Background on factor-graph / smoothing-based alternatives to EKF.*
 
 8. Dellaert, F., & Kaess, M. (2006). Square Root SAM: Simultaneous Localization and Mapping via Square Root Information Smoothing. International Journal of Robotics Research, 25(12), 1181–1203.  
   *Factor-graph-based approach (relevant to the "Future Extensions" section).*
 
-9. Intel RealSense SDK Documentation. https://dev.intelrealsense.com/docs/  
+9. [Intel RealSense SDK Documentation.](https://dev.intelrealsense.com/docs/)  
   *For camera-based visual odometry integration.*
 
-10. Hokuyo UST-10LX Laser Scanner Datasheet. https://www.hokuyo-aut.jp/search/single.php?serial=166  
+10. [Hokuyo UST-10LX Laser Scanner Datasheet.](https://www.hokuyo-aut.jp/search/single.php?serial=166)  
    *Sensor specs (for LiDAR SLAM input).*
